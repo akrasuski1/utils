@@ -1,0 +1,58 @@
+#!/usr/bin/env python2
+
+import sys
+
+try:
+    s = open(sys.argv[1], "rb").read()
+    w = int(sys.argv[2])
+    bpp = int(sys.argv[3])
+    o = open(sys.argv[4], "wb")
+except Exception:
+    print "Usage: %s infile width bpp outfile" % sys.argv[0]
+    sys.exit(1)
+
+h = len(s) / w / bpp
+
+def pp(a, b, c):
+    p = a + b - c
+    pa = abs(p - a)
+    pb = abs(p - b)
+    pc = abs(p - c)
+    if pa <= pb and pa <= pc: return a
+    elif pb <= pc: return b
+    return c
+
+for j in range(h):
+    line = s[j*(w*bpp+1):(j+1)*(w*bpp+1)]
+    f = ord(line[0])
+    if f > 4:
+        print "Warning: unknown filter %d. Setting to zero." % f
+        f = 0
+    print j, h, f
+    out = []
+    for i in range(w*bpp):
+        c = ord(line[i+1])
+        left = 0
+        up = 0
+        upleft = 0
+        if i>=bpp:
+            left = out[-bpp]
+            if j>0:
+                upleft = prev[i-bpp]
+        if j>0:
+            up = prev[i]
+
+        if f == 0:
+            out.append(c)
+        elif f == 1:
+            out.append(c+left)
+        elif f == 2:
+            out.append(c+up)
+        elif f == 3:
+            out.append(c+(left+up)/2)
+        elif f == 4:
+            out.append(c+pp(left, up, upleft))
+        out[-1] = (out[-1] + 512) % 256
+    prev = out
+    o.write("".join(chr(c) for c in out))
+o.close()
