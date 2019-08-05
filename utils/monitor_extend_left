@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Names specific to me, sorry.
+xrandr --output eDP-1 --right-of HDMI-1
